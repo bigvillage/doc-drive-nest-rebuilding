@@ -4,7 +4,9 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { User, UserSchema } from './schemas/user.schema';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule } from '@nestjs/jwt'; // JWT 토큰 생성(sign) 및 검증 기능
+import { JwtStrategy } from './strategies/jwt.strategy'; // Passport가 사용할 JWT 검증 로직
+import { JwtAuthGuard } from './guards/jwt-auth.guard'; // 인증이 필요한 요청을 검사하는 Guard
 
 @Module({
   imports: [
@@ -23,6 +25,6 @@ import { JwtModule } from '@nestjs/jwt';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, JwtStrategy, JwtAuthGuard],
 })
 export class AuthModule {}
