@@ -6,25 +6,17 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AppModule = void 0;
+exports.TaskModule = void 0;
 const common_1 = require("@nestjs/common");
-const config_1 = require("@nestjs/config");
-const mongoose_1 = require("@nestjs/mongoose");
-const task_module_1 = require("./task/task.module");
-const auth_module_1 = require("./auth/auth.module");
-let AppModule = class AppModule {
+const task_controller_1 = require("./task.controller");
+const task_service_1 = require("./task.service");
+let TaskModule = class TaskModule {
 };
-exports.AppModule = AppModule;
-exports.AppModule = AppModule = __decorate([
+exports.TaskModule = TaskModule;
+exports.TaskModule = TaskModule = __decorate([
     (0, common_1.Module)({
-        imports: [
-            config_1.ConfigModule.forRoot({
-                isGlobal: true,
-            }),
-            mongoose_1.MongooseModule.forRoot(process.env.MONGO_URI || 'mongodb://localhost:27017/board'),
-            task_module_1.TaskModule,
-            auth_module_1.AuthModule,
-        ],
+        controllers: [task_controller_1.TaskController],
+        providers: [task_service_1.TaskService]
     })
-], AppModule);
-//# sourceMappingURL=app.module.js.map
+], TaskModule);
+//# sourceMappingURL=task.module.js.map
