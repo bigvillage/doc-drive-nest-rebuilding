@@ -6,27 +6,27 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AppModule = void 0;
+exports.DocumentModule = void 0;
 const common_1 = require("@nestjs/common");
-const config_1 = require("@nestjs/config");
+const document_service_1 = require("./document.service");
+const document_controller_1 = require("./document.controller");
 const mongoose_1 = require("@nestjs/mongoose");
-const task_module_1 = require("./task/task.module");
-const auth_module_1 = require("./auth/auth.module");
-const document_module_1 = require("./document/document.module");
-let AppModule = class AppModule {
+const upload_schema_1 = require("./schemas/upload.schema");
+let DocumentModule = class DocumentModule {
 };
-exports.AppModule = AppModule;
-exports.AppModule = AppModule = __decorate([
+exports.DocumentModule = DocumentModule;
+exports.DocumentModule = DocumentModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            config_1.ConfigModule.forRoot({
-                isGlobal: true,
-            }),
-            mongoose_1.MongooseModule.forRoot(process.env.MONGO_URI || 'mongodb://localhost:27017/board'),
-            task_module_1.TaskModule,
-            auth_module_1.AuthModule,
-            document_module_1.DocumentModule,
+            mongoose_1.MongooseModule.forFeature([
+                {
+                    name: upload_schema_1.Upload.name,
+                    schema: upload_schema_1.UploadSchema,
+                },
+            ]),
         ],
+        providers: [document_service_1.DocumentService],
+        controllers: [document_controller_1.DocumentController],
     })
-], AppModule);
-//# sourceMappingURL=app.module.js.map
+], DocumentModule);
+//# sourceMappingURL=document.module.js.map
