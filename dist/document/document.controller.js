@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DocumentController = void 0;
 const common_1 = require("@nestjs/common");
 const document_service_1 = require("./document.service");
+const node_stream_1 = require("node:stream");
 let DocumentController = class DocumentController {
     documentService;
     constructor(documentService) {
@@ -25,6 +26,16 @@ let DocumentController = class DocumentController {
     }
     search(q) {
         return this.documentService.search(q);
+    }
+    async download(fileUrl, originalName, res) {
+        const response = await this.documentService.download(fileUrl);
+        const body = response.Body;
+        if (!(body instanceof node_stream_1.Readable)) {
+            throw new common_1.InternalServerErrorException('파일을 읽을 수 없습니다.');
+        }
+        res.setHeader('Content-Disposition', `attachment; filename=${encodeURIComponent(originalName)}`);
+        res.setHeader('Content-Type', response.ContentType || 'application/octet-stream');
+        body.pipe(res);
     }
 };
 exports.DocumentController = DocumentController;
@@ -42,6 +53,15 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], DocumentController.prototype, "search", null);
+__decorate([
+    (0, common_1.Get)('download'),
+    __param(0, (0, common_1.Query)('url')),
+    __param(1, (0, common_1.Query)('name')),
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:returntype", Promise)
+], DocumentController.prototype, "download", null);
 exports.DocumentController = DocumentController = __decorate([
     (0, common_1.Controller)('document'),
     __metadata("design:paramtypes", [document_service_1.DocumentService])

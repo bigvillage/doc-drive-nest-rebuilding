@@ -5,15 +5,31 @@ import { BadRequestException } from '@nestjs/common';
 import { Model } from 'mongoose';
 
 import { Upload, UploadDocument } from './schemas/upload.schema';
+// cloudflare
+import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
+import { NotFoundException } from '@nestjs/common';
+import { GetObjectCommandOutput } from '@aws-sdk/client-s3';
 
 @Injectable()
 export class DocumentService {
+  // constructor 안에는 DI(의존성 주입)만
   constructor(
     @InjectModel(Upload.name)
     private readonly uploadModel: Model<UploadDocument>,
   ) {}
 
-  //   문서리스트
+  // constructor 밖에는 직접 생성하거나 클래스가 소유하는 멤버
+  // 한번만 생성해서 재사용하는 객체
+  private readonly s3Client = new S3Client({
+    region: 'auto',
+    endpoint: process.env.R2_ENDPOINT,
+    credentials: {
+      accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+    },
+  });
+
+  // 문서리스트
   async findAll(query: any) {
     const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 10;
@@ -40,7 +56,7 @@ export class DocumentService {
     };
   }
 
-  //   검색
+  // 검색
   async search(keyword: string) {
     if (!keyword) {
       throw new BadRequestException('검색어를 입력해주세요.');
@@ -69,5 +85,21 @@ export class DocumentService {
       _id: hit._id,
       ...hit._source,
     }));
+  }
+
+  // 파일 다운로드
+  async download(fileUrl: string): Promise<GetObjectCommandOutput> {
+    const fileKey = fileUrl.split('/').pop()?.split('?')[0];
+
+    if (!fileKey) {
+      throw new NotFoundException('파일 Key를 찾을 수 없습니다.');
+    }
+
+    const command = new GetObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME,
+      Key: fileKey,
+    });
+
+    return await this.s3Client.send(command);
   }
 }

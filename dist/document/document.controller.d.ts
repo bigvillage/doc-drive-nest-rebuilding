@@ -1,4 +1,5 @@
 import { DocumentService } from './document.service';
+import type { Response } from 'express';
 export declare class DocumentController {
     private readonly documentService;
     constructor(documentService: DocumentService);
@@ -21,4 +22,5 @@ export declare class DocumentController {
         total: number;
     }>;
     search(q: string): Promise<any>;
+    download(fileUrl: string, originalName: string, res: Response): Promise<void>;
 }

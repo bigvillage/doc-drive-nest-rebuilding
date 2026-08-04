@@ -22,11 +22,21 @@ const axios_1 = __importDefault(require("axios"));
 const common_2 = require("@nestjs/common");
 const mongoose_2 = require("mongoose");
 const upload_schema_1 = require("./schemas/upload.schema");
+const client_s3_1 = require("@aws-sdk/client-s3");
+const common_3 = require("@nestjs/common");
 let DocumentService = class DocumentService {
     uploadModel;
     constructor(uploadModel) {
         this.uploadModel = uploadModel;
     }
+    s3Client = new client_s3_1.S3Client({
+        region: 'auto',
+        endpoint: process.env.R2_ENDPOINT,
+        credentials: {
+            accessKeyId: process.env.R2_ACCESS_KEY_ID,
+            secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+        },
+    });
     async findAll(query) {
         const page = Number(query.page) || 1;
         const limit = Number(query.limit) || 10;
@@ -67,6 +77,17 @@ let DocumentService = class DocumentService {
             _id: hit._id,
             ...hit._source,
         }));
+    }
+    async download(fileUrl) {
+        const fileKey = fileUrl.split('/').pop()?.split('?')[0];
+        if (!fileKey) {
+            throw new common_3.NotFoundException('파일 Key를 찾을 수 없습니다.');
+        }
+        const command = new client_s3_1.GetObjectCommand({
+            Bucket: process.env.R2_BUCKET_NAME,
+            Key: fileKey,
+        });
+        return await this.s3Client.send(command);
     }
 };
 exports.DocumentService = DocumentService;
