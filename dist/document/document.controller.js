@@ -17,6 +17,8 @@ const common_1 = require("@nestjs/common");
 const document_service_1 = require("./document.service");
 const node_stream_1 = require("node:stream");
 const platform_express_1 = require("@nestjs/platform-express");
+const common_2 = require("@nestjs/common");
+const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 let DocumentController = class DocumentController {
     documentService;
     constructor(documentService) {
@@ -76,6 +78,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], DocumentController.prototype, "download", null);
 __decorate([
+    (0, common_2.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Post)('upload'),
     (0, common_1.UseInterceptors)((0, platform_express_1.FilesInterceptor)('files')),
     __param(0, (0, common_1.Body)()),

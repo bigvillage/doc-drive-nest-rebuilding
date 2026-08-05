@@ -112,6 +112,7 @@ let DocumentService = class DocumentService {
             title: body.title,
             content: body.content,
             tags: typeof body.tags === 'string' ? JSON.parse(body.tags) : body.tags,
+            userId: user.id,
             files: uploadedFiles,
         });
         await axios_1.default.post(`${process.env.ES_URL}/documents/_doc/${document._id}`, {

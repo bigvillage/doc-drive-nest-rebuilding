@@ -143,7 +143,7 @@ export class DocumentService {
       title: body.title,
       content: body.content,
       tags: typeof body.tags === 'string' ? JSON.parse(body.tags) : body.tags,
-
+      userId: user.id,
       files: uploadedFiles,
     });
 

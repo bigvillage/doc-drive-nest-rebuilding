@@ -17,6 +17,8 @@ import { DocumentService } from './document.service';
 import type { Response } from 'express';
 import { Readable } from 'node:stream';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('document')
 export class DocumentController {
@@ -58,6 +60,7 @@ export class DocumentController {
     body.pipe(res);
   }
 
+  @UseGuards(JwtAuthGuard) //JWT 인증 연결
   @Post('upload')
   @UseInterceptors(FilesInterceptor('files'))
   async upload(
@@ -65,6 +68,9 @@ export class DocumentController {
     @UploadedFiles() files: any[],
     @Request() req,
   ) {
+    // console.log('controller executed');
+    // console.log(req.user);
+
     return this.documentService.upload(body, files, req.user);
   }
 

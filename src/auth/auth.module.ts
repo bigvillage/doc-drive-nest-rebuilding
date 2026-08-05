@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-
+import { PassportModule } from '@nestjs/passport';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { User, UserSchema } from './schemas/user.schema';
@@ -10,6 +10,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard'; // 인증이 필요한 �
 
 @Module({
   imports: [
+    PassportModule,
     MongooseModule.forFeature([
       {
         name: User.name,
