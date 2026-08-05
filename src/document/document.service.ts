@@ -4,6 +4,10 @@ import axios from 'axios';
 import { BadRequestException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { Upload, UploadDocument } from './schemas/upload.schema';
+// dto
+import { UploadDocumentDto } from './dto/upload-document.dto';
+import { UpdateDocumentDto } from './dto/update-document.dto';
+import { FavoriteDocumentDto } from './dto/favorite-document.dto';
 
 // cloudflare
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
@@ -107,7 +111,7 @@ export class DocumentService {
   }
 
   // 파일등록
-  async upload(body: any, files: any[], user: any) {
+  async upload(body: UploadDocumentDto, files: any[], user: any) {
     const uploadedFiles: {
       fileKey: string;
       originalName: string;
@@ -174,10 +178,13 @@ export class DocumentService {
   }
 
   // 파일 수정
-  async update(body: any, user: any) {
+  async update(body: UpdateDocumentDto, user: any) {
     const { id, title, content, tags } = body;
 
-    const document = await this.uploadModel.findById(id);
+    const document = await this.uploadModel.findOne({
+      _id: id,
+      userId: user.id,
+    });
 
     if (!document) {
       throw new NotFoundException('문서를 찾을 수 없습니다.');
@@ -217,7 +224,10 @@ export class DocumentService {
 
   // 파일 삭제
   async delete(id: string, user: any) {
-    const document = await this.uploadModel.findById(id);
+    const document = await this.uploadModel.findOne({
+      _id: id,
+      userId: user.id,
+    });
 
     if (!document) {
       throw new NotFoundException('문서를 찾을 수 없습니다.');
@@ -234,7 +244,7 @@ export class DocumentService {
     }
 
     // MongoDB 삭제
-    await this.uploadModel.findByIdAndDelete(id);
+    await document.deleteOne();
 
     // Elasticsearch 삭제
     await axios.delete(`${process.env.ES_URL}/documents/_doc/${id}`, {
@@ -251,7 +261,7 @@ export class DocumentService {
   }
 
   // 즐겨찾기
-  async favorite(body: any, user: any) {
+  async favorite(body: FavoriteDocumentDto, user: any) {
     const { id, isFavorite } = body;
 
     const document = await this.uploadModel.findOne({

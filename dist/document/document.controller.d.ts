@@ -1,5 +1,8 @@
 import { DocumentService } from './document.service';
 import type { Response } from 'express';
+import { UploadDocumentDto } from './dto/upload-document.dto';
+import { UpdateDocumentDto } from './dto/update-document.dto';
+import { FavoriteDocumentDto } from './dto/favorite-document.dto';
 export declare class DocumentController {
     private readonly documentService;
     constructor(documentService: DocumentService);
@@ -23,7 +26,7 @@ export declare class DocumentController {
     }>;
     search(q: string): Promise<any>;
     download(fileUrl: string, originalName: string, res: Response): Promise<void>;
-    upload(body: any, files: any[], req: any): Promise<{
+    upload(body: UploadDocumentDto, files: any[], req: any): Promise<{
         result: boolean;
         document: import("mongoose").Document<unknown, {}, import("mongoose").Document<unknown, {}, import("./schemas/upload.schema").Upload, {}, import("mongoose").DefaultSchemaOptions> & import("./schemas/upload.schema").Upload & {
             _id: import("mongoose").Types.ObjectId;
@@ -41,7 +44,7 @@ export declare class DocumentController {
             _id: import("mongoose").Types.ObjectId;
         }>;
     }>;
-    update(body: any, req: any): Promise<{
+    update(body: UpdateDocumentDto, req: any): Promise<{
         result: boolean;
         document: import("mongoose").Document<unknown, {}, import("mongoose").Document<unknown, {}, import("./schemas/upload.schema").Upload, {}, import("mongoose").DefaultSchemaOptions> & import("./schemas/upload.schema").Upload & {
             _id: import("mongoose").Types.ObjectId;
@@ -63,7 +66,7 @@ export declare class DocumentController {
         result: boolean;
         message: string;
     }>;
-    favorite(body: any, req: any): Promise<{
+    favorite(body: FavoriteDocumentDto, req: any): Promise<{
         result: boolean;
         document: import("mongoose").Document<unknown, {}, import("mongoose").Document<unknown, {}, import("./schemas/upload.schema").Upload, {}, import("mongoose").DefaultSchemaOptions> & import("./schemas/upload.schema").Upload & {
             _id: import("mongoose").Types.ObjectId;

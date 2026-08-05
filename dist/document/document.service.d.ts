@@ -1,5 +1,8 @@
 import { Model } from 'mongoose';
 import { Upload, UploadDocument } from './schemas/upload.schema';
+import { UploadDocumentDto } from './dto/upload-document.dto';
+import { UpdateDocumentDto } from './dto/update-document.dto';
+import { FavoriteDocumentDto } from './dto/favorite-document.dto';
 import { GetObjectCommandOutput } from '@aws-sdk/client-s3';
 export declare class DocumentService {
     private readonly uploadModel;
@@ -25,7 +28,7 @@ export declare class DocumentService {
     }>;
     search(keyword: string): Promise<any>;
     download(fileUrl: string): Promise<GetObjectCommandOutput>;
-    upload(body: any, files: any[], user: any): Promise<{
+    upload(body: UploadDocumentDto, files: any[], user: any): Promise<{
         result: boolean;
         document: import("mongoose").Document<unknown, {}, import("mongoose").Document<unknown, {}, Upload, {}, import("mongoose").DefaultSchemaOptions> & Upload & {
             _id: import("mongoose").Types.ObjectId;
@@ -43,7 +46,7 @@ export declare class DocumentService {
             _id: import("mongoose").Types.ObjectId;
         }>;
     }>;
-    update(body: any, user: any): Promise<{
+    update(body: UpdateDocumentDto, user: any): Promise<{
         result: boolean;
         document: import("mongoose").Document<unknown, {}, import("mongoose").Document<unknown, {}, Upload, {}, import("mongoose").DefaultSchemaOptions> & Upload & {
             _id: import("mongoose").Types.ObjectId;
@@ -65,7 +68,7 @@ export declare class DocumentService {
         result: boolean;
         message: string;
     }>;
-    favorite(body: any, user: any): Promise<{
+    favorite(body: FavoriteDocumentDto, user: any): Promise<{
         result: boolean;
         document: import("mongoose").Document<unknown, {}, import("mongoose").Document<unknown, {}, Upload, {}, import("mongoose").DefaultSchemaOptions> & Upload & {
             _id: import("mongoose").Types.ObjectId;

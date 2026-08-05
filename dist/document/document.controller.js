@@ -19,6 +19,9 @@ const node_stream_1 = require("node:stream");
 const platform_express_1 = require("@nestjs/platform-express");
 const common_2 = require("@nestjs/common");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const upload_document_dto_1 = require("./dto/upload-document.dto");
+const update_document_dto_1 = require("./dto/update-document.dto");
+const favorite_document_dto_1 = require("./dto/favorite-document.dto");
 let DocumentController = class DocumentController {
     documentService;
     constructor(documentService) {
@@ -87,7 +90,7 @@ __decorate([
     __param(1, (0, common_1.UploadedFiles)()),
     __param(2, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Array, Object]),
+    __metadata("design:paramtypes", [upload_document_dto_1.UploadDocumentDto, Array, Object]),
     __metadata("design:returntype", Promise)
 ], DocumentController.prototype, "upload", null);
 __decorate([
@@ -96,7 +99,7 @@ __decorate([
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [update_document_dto_1.UpdateDocumentDto, Object]),
     __metadata("design:returntype", void 0)
 ], DocumentController.prototype, "update", null);
 __decorate([
@@ -114,7 +117,7 @@ __decorate([
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [favorite_document_dto_1.FavoriteDocumentDto, Object]),
     __metadata("design:returntype", void 0)
 ], DocumentController.prototype, "favorite", null);
 exports.DocumentController = DocumentController = __decorate([

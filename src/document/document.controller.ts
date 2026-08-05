@@ -19,6 +19,10 @@ import { Readable } from 'node:stream';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+// dto
+import { UploadDocumentDto } from './dto/upload-document.dto';
+import { UpdateDocumentDto } from './dto/update-document.dto';
+import { FavoriteDocumentDto } from './dto/favorite-document.dto';
 
 @Controller('document')
 export class DocumentController {
@@ -65,7 +69,7 @@ export class DocumentController {
   @Post('upload')
   @UseInterceptors(FilesInterceptor('files'))
   async upload(
-    @Body() body: any,
+    @Body() body: UploadDocumentDto,
     @UploadedFiles() files: any[],
     @Request() req,
   ) {
@@ -77,7 +81,7 @@ export class DocumentController {
 
   @UseGuards(JwtAuthGuard)
   @Put('upload')
-  update(@Body() body: any, @Request() req) {
+  update(@Body() body: UpdateDocumentDto, @Request() req) {
     return this.documentService.update(body, req.user);
   }
 
@@ -89,7 +93,7 @@ export class DocumentController {
 
   @UseGuards(JwtAuthGuard)
   @Patch('upload')
-  favorite(@Body() body: any, @Request() req) {
+  favorite(@Body() body: FavoriteDocumentDto, @Request() req) {
     return this.documentService.favorite(body, req.user);
   }
 }

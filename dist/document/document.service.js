@@ -137,7 +137,10 @@ let DocumentService = class DocumentService {
     }
     async update(body, user) {
         const { id, title, content, tags } = body;
-        const document = await this.uploadModel.findById(id);
+        const document = await this.uploadModel.findOne({
+            _id: id,
+            userId: user.id,
+        });
         if (!document) {
             throw new common_3.NotFoundException('문서를 찾을 수 없습니다.');
         }
@@ -164,7 +167,10 @@ let DocumentService = class DocumentService {
         };
     }
     async delete(id, user) {
-        const document = await this.uploadModel.findById(id);
+        const document = await this.uploadModel.findOne({
+            _id: id,
+            userId: user.id,
+        });
         if (!document) {
             throw new common_3.NotFoundException('문서를 찾을 수 없습니다.');
         }
@@ -174,7 +180,7 @@ let DocumentService = class DocumentService {
                 Key: file.fileKey,
             }));
         }
-        await this.uploadModel.findByIdAndDelete(id);
+        await document.deleteOne();
         await axios_1.default.delete(`${process.env.ES_URL}/documents/_doc/${id}`, {
             auth: {
                 username: 'elastic',
