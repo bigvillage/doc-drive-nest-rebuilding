@@ -38,12 +38,17 @@ let DocumentController = class DocumentController {
         res.setHeader('Content-Type', response.ContentType || 'application/octet-stream');
         body.pipe(res);
     }
-    async upload(files) {
-        const uploadedFiles = await this.documentService.upload(files);
-        return {
-            result: true,
-            files: uploadedFiles,
-        };
+    async upload(body, files, req) {
+        return this.documentService.upload(body, files, req.user);
+    }
+    update(body) {
+        return this.documentService.update(body);
+    }
+    remove(id) {
+        return this.documentService.delete(id);
+    }
+    favorite(body) {
+        return this.documentService.favorite(body);
     }
 };
 exports.DocumentController = DocumentController;
@@ -73,11 +78,34 @@ __decorate([
 __decorate([
     (0, common_1.Post)('upload'),
     (0, common_1.UseInterceptors)((0, platform_express_1.FilesInterceptor)('files')),
-    __param(0, (0, common_1.UploadedFiles)()),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.UploadedFiles)()),
+    __param(2, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Array]),
+    __metadata("design:paramtypes", [Object, Array, Object]),
     __metadata("design:returntype", Promise)
 ], DocumentController.prototype, "upload", null);
+__decorate([
+    (0, common_1.Put)('upload'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], DocumentController.prototype, "update", null);
+__decorate([
+    (0, common_1.Delete)('upload'),
+    __param(0, (0, common_1.Body)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], DocumentController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Patch)('upload'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], DocumentController.prototype, "favorite", null);
 exports.DocumentController = DocumentController = __decorate([
     (0, common_1.Controller)('document'),
     __metadata("design:paramtypes", [document_service_1.DocumentService])

@@ -9,7 +9,7 @@ import { Upload, UploadDocument } from './schemas/upload.schema';
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { NotFoundException } from '@nestjs/common';
 import { GetObjectCommandOutput } from '@aws-sdk/client-s3';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 
 @Injectable()
 export class DocumentService {
@@ -67,8 +67,8 @@ export class DocumentService {
       `${process.env.ES_URL}/documents/_search`,
       {
         query: {
-          wildcard: {
-            title: `*${keyword}*`,
+          match: {
+            title: keyword,
           },
         },
       },
@@ -104,7 +104,8 @@ export class DocumentService {
     return await this.s3Client.send(command);
   }
 
-  async upload(files: any[]) {
+  // 파일등록
+  async upload(body: any, files: any[], user: any) {
     const uploadedFiles: {
       fileKey: string;
       originalName: string;
@@ -138,6 +139,151 @@ export class DocumentService {
       });
     }
 
-    return uploadedFiles;
+    const document = await this.uploadModel.create({
+      title: body.title,
+      content: body.content,
+      tags: typeof body.tags === 'string' ? JSON.parse(body.tags) : body.tags,
+
+      files: uploadedFiles,
+    });
+
+    await axios.post(
+      `${process.env.ES_URL}/documents/_doc/${document._id}`,
+      {
+        title: document.title,
+        content: document.content,
+        files: document.files.map((file) => ({
+          originalName: file.originalName,
+          fileUrl: file.fileUrl,
+        })),
+      },
+      {
+        auth: {
+          username: 'elastic',
+          password: process.env.ES_PASSWORD || '123!@#qwe',
+        },
+      },
+    );
+
+    return {
+      result: true,
+      document,
+    };
+  }
+
+  // 파일 수정
+  async update(body: any) {
+    const { id, title, content, tags } = body;
+
+    const document = await this.uploadModel.findById(id);
+
+    if (!document) {
+      throw new NotFoundException('문서를 찾을 수 없습니다.');
+    }
+
+    document.title = title || document.title;
+    document.content = content || document.content;
+
+    if (tags) {
+      document.tags = typeof tags === 'string' ? JSON.parse(tags) : tags;
+    }
+
+    await document.save();
+
+    // Elasticsearch 업데이트
+    await axios.post(
+      `${process.env.ES_URL}/documents/_update/${id}`,
+      {
+        doc: {
+          title: document.title,
+          content: document.content,
+        },
+      },
+      {
+        auth: {
+          username: 'elastic',
+          password: process.env.ES_PASSWORD || '123!@#qwe',
+        },
+      },
+    );
+
+    return {
+      result: true,
+      document,
+    };
+  }
+
+  // 파일 삭제
+  async delete(id: string) {
+    const document = await this.uploadModel.findById(id);
+
+    if (!document) {
+      throw new NotFoundException('문서를 찾을 수 없습니다.');
+    }
+
+    // R2 파일 삭제
+    for (const file of document.files) {
+      await this.s3Client.send(
+        new DeleteObjectCommand({
+          Bucket: process.env.R2_BUCKET_NAME,
+          Key: file.fileKey,
+        }),
+      );
+    }
+
+    // MongoDB 삭제
+    await this.uploadModel.findByIdAndDelete(id);
+
+    // Elasticsearch 삭제
+    await axios.delete(`${process.env.ES_URL}/documents/_doc/${id}`, {
+      auth: {
+        username: 'elastic',
+        password: process.env.ES_PASSWORD || '123!@#qwe',
+      },
+    });
+
+    return {
+      result: true,
+      message: '삭제 성공',
+    };
+  }
+
+  // 즐겨찾기
+  async favorite(body: any) {
+    const { id, isFavorite } = body;
+
+    const document = await this.uploadModel.findByIdAndUpdate(
+      id,
+      {
+        isFavorite,
+      },
+      {
+        new: true,
+      },
+    );
+
+    if (!document) {
+      throw new NotFoundException('문서를 찾을 수 없습니다.');
+    }
+
+    await axios.post(
+      `${process.env.ES_URL}/documents/_update/${id}`,
+      {
+        doc: {
+          isFavorite: document.isFavorite,
+        },
+      },
+      {
+        auth: {
+          username: 'elastic',
+          password: process.env.ES_PASSWORD || '123!@#qwe',
+        },
+      },
+    );
+
+    return {
+      result: true,
+      document,
+    };
   }
 }

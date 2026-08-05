@@ -63,8 +63,8 @@ let DocumentService = class DocumentService {
         }
         const response = await axios_1.default.post(`${process.env.ES_URL}/documents/_search`, {
             query: {
-                wildcard: {
-                    title: `*${keyword}*`,
+                match: {
+                    title: keyword,
                 },
             },
         }, {
@@ -90,7 +90,7 @@ let DocumentService = class DocumentService {
         });
         return await this.s3Client.send(command);
     }
-    async upload(files) {
+    async upload(body, files, user) {
         const uploadedFiles = [];
         for (const file of files) {
             const utf8Name = Buffer.from(file.originalname, 'latin1').toString('utf8');
@@ -108,7 +108,105 @@ let DocumentService = class DocumentService {
                 fileUrl: `${process.env.R2_PUBLIC_URL}/${fileKey}`,
             });
         }
-        return uploadedFiles;
+        const document = await this.uploadModel.create({
+            title: body.title,
+            content: body.content,
+            tags: typeof body.tags === 'string' ? JSON.parse(body.tags) : body.tags,
+            files: uploadedFiles,
+        });
+        await axios_1.default.post(`${process.env.ES_URL}/documents/_doc/${document._id}`, {
+            title: document.title,
+            content: document.content,
+            files: document.files.map((file) => ({
+                originalName: file.originalName,
+                fileUrl: file.fileUrl,
+            })),
+        }, {
+            auth: {
+                username: 'elastic',
+                password: process.env.ES_PASSWORD || '123!@#qwe',
+            },
+        });
+        return {
+            result: true,
+            document,
+        };
+    }
+    async update(body) {
+        const { id, title, content, tags } = body;
+        const document = await this.uploadModel.findById(id);
+        if (!document) {
+            throw new common_3.NotFoundException('문서를 찾을 수 없습니다.');
+        }
+        document.title = title || document.title;
+        document.content = content || document.content;
+        if (tags) {
+            document.tags = typeof tags === 'string' ? JSON.parse(tags) : tags;
+        }
+        await document.save();
+        await axios_1.default.post(`${process.env.ES_URL}/documents/_update/${id}`, {
+            doc: {
+                title: document.title,
+                content: document.content,
+            },
+        }, {
+            auth: {
+                username: 'elastic',
+                password: process.env.ES_PASSWORD || '123!@#qwe',
+            },
+        });
+        return {
+            result: true,
+            document,
+        };
+    }
+    async delete(id) {
+        const document = await this.uploadModel.findById(id);
+        if (!document) {
+            throw new common_3.NotFoundException('문서를 찾을 수 없습니다.');
+        }
+        for (const file of document.files) {
+            await this.s3Client.send(new client_s3_2.DeleteObjectCommand({
+                Bucket: process.env.R2_BUCKET_NAME,
+                Key: file.fileKey,
+            }));
+        }
+        await this.uploadModel.findByIdAndDelete(id);
+        await axios_1.default.delete(`${process.env.ES_URL}/documents/_doc/${id}`, {
+            auth: {
+                username: 'elastic',
+                password: process.env.ES_PASSWORD || '123!@#qwe',
+            },
+        });
+        return {
+            result: true,
+            message: '삭제 성공',
+        };
+    }
+    async favorite(body) {
+        const { id, isFavorite } = body;
+        const document = await this.uploadModel.findByIdAndUpdate(id, {
+            isFavorite,
+        }, {
+            new: true,
+        });
+        if (!document) {
+            throw new common_3.NotFoundException('문서를 찾을 수 없습니다.');
+        }
+        await axios_1.default.post(`${process.env.ES_URL}/documents/_update/${id}`, {
+            doc: {
+                isFavorite: document.isFavorite,
+            },
+        }, {
+            auth: {
+                username: 'elastic',
+                password: process.env.ES_PASSWORD || '123!@#qwe',
+            },
+        });
+        return {
+            result: true,
+            document,
+        };
     }
 };
 exports.DocumentService = DocumentService;

@@ -1,8 +1,13 @@
 import {
   Controller,
+  Body,
   Get,
   Post,
+  Put,
+  Delete,
+  Patch,
   Res,
+  Request,
   Query,
   UploadedFiles,
   UseInterceptors,
@@ -55,12 +60,26 @@ export class DocumentController {
 
   @Post('upload')
   @UseInterceptors(FilesInterceptor('files'))
-  async upload(@UploadedFiles() files: any[]) {
-    const uploadedFiles = await this.documentService.upload(files);
+  async upload(
+    @Body() body: any,
+    @UploadedFiles() files: any[],
+    @Request() req,
+  ) {
+    return this.documentService.upload(body, files, req.user);
+  }
 
-    return {
-      result: true,
-      files: uploadedFiles,
-    };
+  @Put('upload')
+  update(@Body() body: any) {
+    return this.documentService.update(body);
+  }
+
+  @Delete('upload')
+  remove(@Body('id') id: string) {
+    return this.documentService.delete(id);
+  }
+
+  @Patch('upload')
+  favorite(@Body() body: any) {
+    return this.documentService.favorite(body);
   }
 }
