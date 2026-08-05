@@ -24,9 +24,10 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 export class DocumentController {
   constructor(private readonly documentService: DocumentService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Get('list')
-  findAll(@Query() query: any) {
-    return this.documentService.findAll(query);
+  findAll(@Query() query: any, @Request() req) {
+    return this.documentService.findAll(query, req.user);
   }
 
   @Get('search')
@@ -74,18 +75,21 @@ export class DocumentController {
     return this.documentService.upload(body, files, req.user);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put('upload')
-  update(@Body() body: any) {
-    return this.documentService.update(body);
+  update(@Body() body: any, @Request() req) {
+    return this.documentService.update(body, req.user);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete('upload')
-  remove(@Body('id') id: string) {
-    return this.documentService.delete(id);
+  remove(@Body('id') id: string, @Request() req) {
+    return this.documentService.delete(id, req.user);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch('upload')
-  favorite(@Body() body: any) {
-    return this.documentService.favorite(body);
+  favorite(@Body() body: any, @Request() req) {
+    return this.documentService.favorite(body, req.user);
   }
 }

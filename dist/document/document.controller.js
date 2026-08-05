@@ -24,8 +24,8 @@ let DocumentController = class DocumentController {
     constructor(documentService) {
         this.documentService = documentService;
     }
-    findAll(query) {
-        return this.documentService.findAll(query);
+    findAll(query, req) {
+        return this.documentService.findAll(query, req.user);
     }
     search(q) {
         return this.documentService.search(q);
@@ -43,22 +43,24 @@ let DocumentController = class DocumentController {
     async upload(body, files, req) {
         return this.documentService.upload(body, files, req.user);
     }
-    update(body) {
-        return this.documentService.update(body);
+    update(body, req) {
+        return this.documentService.update(body, req.user);
     }
-    remove(id) {
-        return this.documentService.delete(id);
+    remove(id, req) {
+        return this.documentService.delete(id, req.user);
     }
-    favorite(body) {
-        return this.documentService.favorite(body);
+    favorite(body, req) {
+        return this.documentService.favorite(body, req.user);
     }
 };
 exports.DocumentController = DocumentController;
 __decorate([
+    (0, common_2.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Get)('list'),
     __param(0, (0, common_1.Query)()),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", void 0)
 ], DocumentController.prototype, "findAll", null);
 __decorate([
@@ -89,24 +91,30 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], DocumentController.prototype, "upload", null);
 __decorate([
+    (0, common_2.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Put)('upload'),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", void 0)
 ], DocumentController.prototype, "update", null);
 __decorate([
+    (0, common_2.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Delete)('upload'),
     __param(0, (0, common_1.Body)('id')),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], DocumentController.prototype, "remove", null);
 __decorate([
+    (0, common_2.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Patch)('upload'),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", void 0)
 ], DocumentController.prototype, "favorite", null);
 exports.DocumentController = DocumentController = __decorate([

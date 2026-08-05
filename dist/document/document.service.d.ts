@@ -5,7 +5,7 @@ export declare class DocumentService {
     private readonly uploadModel;
     constructor(uploadModel: Model<UploadDocument>);
     private readonly s3Client;
-    findAll(query: any): Promise<{
+    findAll(query: any, user: any): Promise<{
         documents: (import("mongoose").Document<unknown, {}, import("mongoose").Document<unknown, {}, Upload, {}, import("mongoose").DefaultSchemaOptions> & Upload & {
             _id: import("mongoose").Types.ObjectId;
         } & {
@@ -43,7 +43,7 @@ export declare class DocumentService {
             _id: import("mongoose").Types.ObjectId;
         }>;
     }>;
-    update(body: any): Promise<{
+    update(body: any, user: any): Promise<{
         result: boolean;
         document: import("mongoose").Document<unknown, {}, import("mongoose").Document<unknown, {}, Upload, {}, import("mongoose").DefaultSchemaOptions> & Upload & {
             _id: import("mongoose").Types.ObjectId;
@@ -61,11 +61,11 @@ export declare class DocumentService {
             _id: import("mongoose").Types.ObjectId;
         }>;
     }>;
-    delete(id: string): Promise<{
+    delete(id: string, user: any): Promise<{
         result: boolean;
         message: string;
     }>;
-    favorite(body: any): Promise<{
+    favorite(body: any, user: any): Promise<{
         result: boolean;
         document: import("mongoose").Document<unknown, {}, import("mongoose").Document<unknown, {}, Upload, {}, import("mongoose").DefaultSchemaOptions> & Upload & {
             _id: import("mongoose").Types.ObjectId;

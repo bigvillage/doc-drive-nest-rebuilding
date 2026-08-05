@@ -3,7 +3,7 @@ import type { Response } from 'express';
 export declare class DocumentController {
     private readonly documentService;
     constructor(documentService: DocumentService);
-    findAll(query: any): Promise<{
+    findAll(query: any, req: any): Promise<{
         documents: (import("mongoose").Document<unknown, {}, import("mongoose").Document<unknown, {}, import("./schemas/upload.schema").Upload, {}, import("mongoose").DefaultSchemaOptions> & import("./schemas/upload.schema").Upload & {
             _id: import("mongoose").Types.ObjectId;
         } & {
@@ -41,7 +41,7 @@ export declare class DocumentController {
             _id: import("mongoose").Types.ObjectId;
         }>;
     }>;
-    update(body: any): Promise<{
+    update(body: any, req: any): Promise<{
         result: boolean;
         document: import("mongoose").Document<unknown, {}, import("mongoose").Document<unknown, {}, import("./schemas/upload.schema").Upload, {}, import("mongoose").DefaultSchemaOptions> & import("./schemas/upload.schema").Upload & {
             _id: import("mongoose").Types.ObjectId;
@@ -59,11 +59,11 @@ export declare class DocumentController {
             _id: import("mongoose").Types.ObjectId;
         }>;
     }>;
-    remove(id: string): Promise<{
+    remove(id: string, req: any): Promise<{
         result: boolean;
         message: string;
     }>;
-    favorite(body: any): Promise<{
+    favorite(body: any, req: any): Promise<{
         result: boolean;
         document: import("mongoose").Document<unknown, {}, import("mongoose").Document<unknown, {}, import("./schemas/upload.schema").Upload, {}, import("mongoose").DefaultSchemaOptions> & import("./schemas/upload.schema").Upload & {
             _id: import("mongoose").Types.ObjectId;

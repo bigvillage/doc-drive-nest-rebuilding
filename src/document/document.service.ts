@@ -31,13 +31,15 @@ export class DocumentService {
   });
 
   // 문서리스트
-  async findAll(query: any) {
+  async findAll(query: any, user: any) {
     const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 10;
 
     const skip = (page - 1) * limit;
 
-    const filter: any = {};
+    const filter: any = {
+      userId: user.id,
+    };
 
     if (query.isFavorite === 'true' || query.type === 'favorite') {
       filter.isFavorite = true;
@@ -172,7 +174,7 @@ export class DocumentService {
   }
 
   // 파일 수정
-  async update(body: any) {
+  async update(body: any, user: any) {
     const { id, title, content, tags } = body;
 
     const document = await this.uploadModel.findById(id);
@@ -214,7 +216,7 @@ export class DocumentService {
   }
 
   // 파일 삭제
-  async delete(id: string) {
+  async delete(id: string, user: any) {
     const document = await this.uploadModel.findById(id);
 
     if (!document) {
@@ -249,22 +251,20 @@ export class DocumentService {
   }
 
   // 즐겨찾기
-  async favorite(body: any) {
+  async favorite(body: any, user: any) {
     const { id, isFavorite } = body;
 
-    const document = await this.uploadModel.findByIdAndUpdate(
-      id,
-      {
-        isFavorite,
-      },
-      {
-        new: true,
-      },
-    );
+    const document = await this.uploadModel.findOne({
+      _id: id,
+      userId: user.id,
+    });
 
     if (!document) {
       throw new NotFoundException('문서를 찾을 수 없습니다.');
     }
+
+    document.isFavorite = isFavorite;
+    await document.save();
 
     await axios.post(
       `${process.env.ES_URL}/documents/_update/${id}`,

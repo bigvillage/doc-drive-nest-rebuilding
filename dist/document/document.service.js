@@ -38,11 +38,13 @@ let DocumentService = class DocumentService {
             secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
         },
     });
-    async findAll(query) {
+    async findAll(query, user) {
         const page = Number(query.page) || 1;
         const limit = Number(query.limit) || 10;
         const skip = (page - 1) * limit;
-        const filter = {};
+        const filter = {
+            userId: user.id,
+        };
         if (query.isFavorite === 'true' || query.type === 'favorite') {
             filter.isFavorite = true;
         }
@@ -133,7 +135,7 @@ let DocumentService = class DocumentService {
             document,
         };
     }
-    async update(body) {
+    async update(body, user) {
         const { id, title, content, tags } = body;
         const document = await this.uploadModel.findById(id);
         if (!document) {
@@ -161,7 +163,7 @@ let DocumentService = class DocumentService {
             document,
         };
     }
-    async delete(id) {
+    async delete(id, user) {
         const document = await this.uploadModel.findById(id);
         if (!document) {
             throw new common_3.NotFoundException('문서를 찾을 수 없습니다.');
@@ -184,16 +186,17 @@ let DocumentService = class DocumentService {
             message: '삭제 성공',
         };
     }
-    async favorite(body) {
+    async favorite(body, user) {
         const { id, isFavorite } = body;
-        const document = await this.uploadModel.findByIdAndUpdate(id, {
-            isFavorite,
-        }, {
-            new: true,
+        const document = await this.uploadModel.findOne({
+            _id: id,
+            userId: user.id,
         });
         if (!document) {
             throw new common_3.NotFoundException('문서를 찾을 수 없습니다.');
         }
+        document.isFavorite = isFavorite;
+        await document.save();
         await axios_1.default.post(`${process.env.ES_URL}/documents/_update/${id}`, {
             doc: {
                 isFavorite: document.isFavorite,
