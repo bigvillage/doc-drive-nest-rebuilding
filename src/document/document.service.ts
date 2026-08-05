@@ -3,12 +3,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import axios from 'axios';
 import { BadRequestException } from '@nestjs/common';
 import { Model } from 'mongoose';
-
 import { Upload, UploadDocument } from './schemas/upload.schema';
+
 // cloudflare
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { NotFoundException } from '@nestjs/common';
 import { GetObjectCommandOutput } from '@aws-sdk/client-s3';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
 
 @Injectable()
 export class DocumentService {
@@ -101,5 +102,42 @@ export class DocumentService {
     });
 
     return await this.s3Client.send(command);
+  }
+
+  async upload(files: any[]) {
+    const uploadedFiles: {
+      fileKey: string;
+      originalName: string;
+      size: number;
+      fileUrl: string;
+    }[] = [];
+
+    for (const file of files) {
+      // 한글 파일명 깨짐 방지
+      const utf8Name = Buffer.from(file.originalname, 'latin1').toString(
+        'utf8',
+      );
+
+      // R2에 저장될 파일명
+      const fileKey = `${Date.now()}_${utf8Name}`;
+
+      await this.s3Client.send(
+        new PutObjectCommand({
+          Bucket: process.env.R2_BUCKET_NAME,
+          Key: fileKey,
+          Body: file.buffer,
+          ContentType: file.mimetype,
+        }),
+      );
+
+      uploadedFiles.push({
+        fileKey,
+        originalName: utf8Name,
+        size: file.size,
+        fileUrl: `${process.env.R2_PUBLIC_URL}/${fileKey}`,
+      });
+    }
+
+    return uploadedFiles;
   }
 }

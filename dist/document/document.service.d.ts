@@ -25,4 +25,10 @@ export declare class DocumentService {
     }>;
     search(keyword: string): Promise<any>;
     download(fileUrl: string): Promise<GetObjectCommandOutput>;
+    upload(files: any[]): Promise<{
+        fileKey: string;
+        originalName: string;
+        size: number;
+        fileUrl: string;
+    }[]>;
 }

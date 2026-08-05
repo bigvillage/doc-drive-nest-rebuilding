@@ -1,13 +1,17 @@
 import {
   Controller,
   Get,
+  Post,
   Res,
   Query,
+  UploadedFiles,
+  UseInterceptors,
   InternalServerErrorException,
 } from '@nestjs/common';
 import { DocumentService } from './document.service';
 import type { Response } from 'express';
 import { Readable } from 'node:stream';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('document')
 export class DocumentController {
@@ -47,5 +51,16 @@ export class DocumentController {
     );
 
     body.pipe(res);
+  }
+
+  @Post('upload')
+  @UseInterceptors(FilesInterceptor('files'))
+  async upload(@UploadedFiles() files: any[]) {
+    const uploadedFiles = await this.documentService.upload(files);
+
+    return {
+      result: true,
+      files: uploadedFiles,
+    };
   }
 }

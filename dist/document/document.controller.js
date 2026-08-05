@@ -16,6 +16,7 @@ exports.DocumentController = void 0;
 const common_1 = require("@nestjs/common");
 const document_service_1 = require("./document.service");
 const node_stream_1 = require("node:stream");
+const platform_express_1 = require("@nestjs/platform-express");
 let DocumentController = class DocumentController {
     documentService;
     constructor(documentService) {
@@ -36,6 +37,13 @@ let DocumentController = class DocumentController {
         res.setHeader('Content-Disposition', `attachment; filename=${encodeURIComponent(originalName)}`);
         res.setHeader('Content-Type', response.ContentType || 'application/octet-stream');
         body.pipe(res);
+    }
+    async upload(files) {
+        const uploadedFiles = await this.documentService.upload(files);
+        return {
+            result: true,
+            files: uploadedFiles,
+        };
     }
 };
 exports.DocumentController = DocumentController;
@@ -62,6 +70,14 @@ __decorate([
     __metadata("design:paramtypes", [String, String, Object]),
     __metadata("design:returntype", Promise)
 ], DocumentController.prototype, "download", null);
+__decorate([
+    (0, common_1.Post)('upload'),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FilesInterceptor)('files')),
+    __param(0, (0, common_1.UploadedFiles)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Array]),
+    __metadata("design:returntype", Promise)
+], DocumentController.prototype, "upload", null);
 exports.DocumentController = DocumentController = __decorate([
     (0, common_1.Controller)('document'),
     __metadata("design:paramtypes", [document_service_1.DocumentService])

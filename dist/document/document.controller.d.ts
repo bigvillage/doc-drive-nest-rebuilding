@@ -23,4 +23,13 @@ export declare class DocumentController {
     }>;
     search(q: string): Promise<any>;
     download(fileUrl: string, originalName: string, res: Response): Promise<void>;
+    upload(files: any[]): Promise<{
+        result: boolean;
+        files: {
+            fileKey: string;
+            originalName: string;
+            size: number;
+            fileUrl: string;
+        }[];
+    }>;
 }

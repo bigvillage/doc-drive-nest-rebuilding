@@ -24,6 +24,7 @@ const mongoose_2 = require("mongoose");
 const upload_schema_1 = require("./schemas/upload.schema");
 const client_s3_1 = require("@aws-sdk/client-s3");
 const common_3 = require("@nestjs/common");
+const client_s3_2 = require("@aws-sdk/client-s3");
 let DocumentService = class DocumentService {
     uploadModel;
     constructor(uploadModel) {
@@ -88,6 +89,26 @@ let DocumentService = class DocumentService {
             Key: fileKey,
         });
         return await this.s3Client.send(command);
+    }
+    async upload(files) {
+        const uploadedFiles = [];
+        for (const file of files) {
+            const utf8Name = Buffer.from(file.originalname, 'latin1').toString('utf8');
+            const fileKey = `${Date.now()}_${utf8Name}`;
+            await this.s3Client.send(new client_s3_2.PutObjectCommand({
+                Bucket: process.env.R2_BUCKET_NAME,
+                Key: fileKey,
+                Body: file.buffer,
+                ContentType: file.mimetype,
+            }));
+            uploadedFiles.push({
+                fileKey,
+                originalName: utf8Name,
+                size: file.size,
+                fileUrl: `${process.env.R2_PUBLIC_URL}/${fileKey}`,
+            });
+        }
+        return uploadedFiles;
     }
 };
 exports.DocumentService = DocumentService;
