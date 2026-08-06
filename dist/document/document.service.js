@@ -24,19 +24,23 @@ const upload_schema_1 = require("./schemas/upload.schema");
 const client_s3_1 = require("@aws-sdk/client-s3");
 const common_2 = require("@nestjs/common");
 const client_s3_2 = require("@aws-sdk/client-s3");
+const config_1 = require("@nestjs/config");
 let DocumentService = class DocumentService {
     uploadModel;
-    constructor(uploadModel) {
+    configService;
+    s3Client;
+    constructor(uploadModel, configService) {
         this.uploadModel = uploadModel;
+        this.configService = configService;
+        this.s3Client = new client_s3_1.S3Client({
+            region: 'auto',
+            endpoint: this.configService.get('R2_ENDPOINT'),
+            credentials: {
+                accessKeyId: this.configService.get('R2_ACCESS_KEY_ID'),
+                secretAccessKey: this.configService.get('R2_SECRET_ACCESS_KEY'),
+            },
+        });
     }
-    s3Client = new client_s3_1.S3Client({
-        region: 'auto',
-        endpoint: process.env.R2_ENDPOINT,
-        credentials: {
-            accessKeyId: process.env.R2_ACCESS_KEY_ID,
-            secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
-        },
-    });
     async findAll(query, user) {
         const page = query.page ?? 1;
         const limit = query.limit ?? 10;
@@ -222,6 +226,7 @@ exports.DocumentService = DocumentService;
 exports.DocumentService = DocumentService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, mongoose_1.InjectModel)(upload_schema_1.Upload.name)),
-    __metadata("design:paramtypes", [mongoose_2.Model])
+    __metadata("design:paramtypes", [mongoose_2.Model,
+        config_1.ConfigService])
 ], DocumentService);
 //# sourceMappingURL=document.service.js.map

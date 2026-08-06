@@ -6,10 +6,12 @@ import { UpdateDocumentDto } from './dto/update-document.dto';
 import { FavoriteDocumentDto } from './dto/favorite-document.dto';
 import { ListDocumentDto } from './dto/list-document.dto';
 import { GetObjectCommandOutput } from '@aws-sdk/client-s3';
+import { ConfigService } from '@nestjs/config';
 export declare class DocumentService {
     private readonly uploadModel;
-    constructor(uploadModel: Model<UploadDocument>);
+    private readonly configService;
     private readonly s3Client;
+    constructor(uploadModel: Model<UploadDocument>, configService: ConfigService);
     findAll(query: ListDocumentDto, user: JwtUser): Promise<{
         documents: (import("mongoose").Document<unknown, {}, import("mongoose").Document<unknown, {}, Upload, {}, import("mongoose").DefaultSchemaOptions> & Upload & {
             _id: import("mongoose").Types.ObjectId;

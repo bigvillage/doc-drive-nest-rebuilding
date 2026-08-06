@@ -9,31 +9,45 @@ import { UploadDocumentDto } from './dto/upload-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 import { FavoriteDocumentDto } from './dto/favorite-document.dto';
 import { ListDocumentDto } from './dto/list-document.dto';
-
 // cloudflare
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { NotFoundException } from '@nestjs/common';
 import { GetObjectCommandOutput } from '@aws-sdk/client-s3';
 import { PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+// config
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class DocumentService {
+  private readonly s3Client: S3Client;
   // constructor 안에는 DI(의존성 주입)만
   constructor(
     @InjectModel(Upload.name)
     private readonly uploadModel: Model<UploadDocument>,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.s3Client = new S3Client({
+      region: 'auto',
+      endpoint: this.configService.get<string>('R2_ENDPOINT'),
+      credentials: {
+        accessKeyId: this.configService.get<string>('R2_ACCESS_KEY_ID')!,
+        secretAccessKey: this.configService.get<string>(
+          'R2_SECRET_ACCESS_KEY',
+        )!,
+      },
+    });
+  }
 
   // constructor 밖에는 직접 생성하거나 클래스가 소유하는 멤버
   // 한번만 생성해서 재사용하는 객체
-  private readonly s3Client = new S3Client({
-    region: 'auto',
-    endpoint: process.env.R2_ENDPOINT,
-    credentials: {
-      accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
-    },
-  });
+  //   private readonly s3Client = new S3Client({
+  //     region: 'auto',
+  //     endpoint: process.env.R2_ENDPOINT,
+  //     credentials: {
+  //       accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+  //       secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+  //     },
+  //   });
 
   // 문서리스트
   async findAll(query: ListDocumentDto, user: JwtUser) {
