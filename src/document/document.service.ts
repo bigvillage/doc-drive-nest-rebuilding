@@ -16,12 +16,15 @@ import { GetObjectCommandOutput } from '@aws-sdk/client-s3';
 import { PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 // config
 import { ConfigService } from '@nestjs/config';
+// Logger
+import { Logger } from '@nestjs/common';
 
 @Injectable()
 export class DocumentService {
   private readonly s3Client: S3Client;
   private readonly esUrl: string;
   private readonly esPassword: string;
+  private readonly logger = new Logger(DocumentService.name);
   // constructor 안에는 DI(의존성 주입)만
   constructor(
     @InjectModel(Upload.name)
@@ -132,6 +135,7 @@ export class DocumentService {
 
   // 파일등록
   async upload(body: UploadDocumentDto, files: any[], user: JwtUser) {
+    this.logger.log(`Upload started by user ${user.id}`);
     const uploadedFiles: {
       fileKey: string;
       originalName: string;
@@ -191,6 +195,8 @@ export class DocumentService {
       },
     );
 
+    this.logger.log(`Upload completed: ${document._id}`);
+
     return {
       result: true,
       document,
@@ -218,6 +224,8 @@ export class DocumentService {
     }
 
     await document.save();
+
+    this.logger.log(`Document updated: ${id}`);
 
     // Elasticsearch 업데이트
     await axios.post(
@@ -274,6 +282,8 @@ export class DocumentService {
       },
     });
 
+    this.logger.log(`Document deleted: ${id}`);
+
     return {
       result: true,
       message: '삭제 성공',
@@ -295,6 +305,8 @@ export class DocumentService {
 
     document.isFavorite = isFavorite;
     await document.save();
+
+    this.logger.log(`Favorite changed: ${id} -> ${document.isFavorite}`);
 
     await axios.post(
       `${this.esUrl}/documents/_update/${id}`,

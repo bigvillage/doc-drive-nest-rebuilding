@@ -13,6 +13,7 @@ export declare class DocumentService {
     private readonly s3Client;
     private readonly esUrl;
     private readonly esPassword;
+    private readonly logger;
     constructor(uploadModel: Model<UploadDocument>, configService: ConfigService);
     findAll(query: ListDocumentDto, user: JwtUser): Promise<{
         documents: (import("mongoose").Document<unknown, {}, import("mongoose").Document<unknown, {}, Upload, {}, import("mongoose").DefaultSchemaOptions> & Upload & {

@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var DocumentService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DocumentService = void 0;
 const common_1 = require("@nestjs/common");
@@ -25,12 +26,14 @@ const client_s3_1 = require("@aws-sdk/client-s3");
 const common_2 = require("@nestjs/common");
 const client_s3_2 = require("@aws-sdk/client-s3");
 const config_1 = require("@nestjs/config");
-let DocumentService = class DocumentService {
+const common_3 = require("@nestjs/common");
+let DocumentService = DocumentService_1 = class DocumentService {
     uploadModel;
     configService;
     s3Client;
     esUrl;
     esPassword;
+    logger = new common_3.Logger(DocumentService_1.name);
     constructor(uploadModel, configService) {
         this.uploadModel = uploadModel;
         this.configService = configService;
@@ -100,6 +103,7 @@ let DocumentService = class DocumentService {
         return await this.s3Client.send(command);
     }
     async upload(body, files, user) {
+        this.logger.log(`Upload started by user ${user.id}`);
         const uploadedFiles = [];
         for (const file of files) {
             const utf8Name = Buffer.from(file.originalname, 'latin1').toString('utf8');
@@ -137,6 +141,7 @@ let DocumentService = class DocumentService {
                 password: this.esPassword,
             },
         });
+        this.logger.log(`Upload completed: ${document._id}`);
         return {
             result: true,
             document,
@@ -157,6 +162,7 @@ let DocumentService = class DocumentService {
             document.tags = typeof tags === 'string' ? JSON.parse(tags) : tags;
         }
         await document.save();
+        this.logger.log(`Document updated: ${id}`);
         await axios_1.default.post(`${this.esUrl}/documents/_update/${id}`, {
             doc: {
                 title: document.title,
@@ -194,6 +200,7 @@ let DocumentService = class DocumentService {
                 password: this.esPassword,
             },
         });
+        this.logger.log(`Document deleted: ${id}`);
         return {
             result: true,
             message: '삭제 성공',
@@ -210,6 +217,7 @@ let DocumentService = class DocumentService {
         }
         document.isFavorite = isFavorite;
         await document.save();
+        this.logger.log(`Favorite changed: ${id} -> ${document.isFavorite}`);
         await axios_1.default.post(`${this.esUrl}/documents/_update/${id}`, {
             doc: {
                 isFavorite: document.isFavorite,
@@ -227,7 +235,7 @@ let DocumentService = class DocumentService {
     }
 };
 exports.DocumentService = DocumentService;
-exports.DocumentService = DocumentService = __decorate([
+exports.DocumentService = DocumentService = DocumentService_1 = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, mongoose_1.InjectModel)(upload_schema_1.Upload.name)),
     __metadata("design:paramtypes", [mongoose_2.Model,
