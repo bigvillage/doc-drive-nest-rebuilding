@@ -29,6 +29,8 @@ let DocumentService = class DocumentService {
     uploadModel;
     configService;
     s3Client;
+    esUrl;
+    esPassword;
     constructor(uploadModel, configService) {
         this.uploadModel = uploadModel;
         this.configService = configService;
@@ -40,6 +42,8 @@ let DocumentService = class DocumentService {
                 secretAccessKey: this.configService.get('R2_SECRET_ACCESS_KEY'),
             },
         });
+        this.esUrl = this.configService.get('ES_URL');
+        this.esPassword = this.configService.get('ES_PASSWORD');
     }
     async findAll(query, user) {
         const page = query.page ?? 1;
@@ -66,7 +70,7 @@ let DocumentService = class DocumentService {
         if (!keyword) {
             throw new common_1.BadRequestException('검색어를 입력해주세요.');
         }
-        const response = await axios_1.default.post(`${process.env.ES_URL}/documents/_search`, {
+        const response = await axios_1.default.post(`${this.esUrl}/documents/_search`, {
             query: {
                 match: {
                     title: keyword,
@@ -75,7 +79,7 @@ let DocumentService = class DocumentService {
         }, {
             auth: {
                 username: 'elastic',
-                password: process.env.ES_PASSWORD || '123!@#qwe',
+                password: this.esPassword,
             },
         });
         const hits = response.data.hits.hits;
@@ -90,7 +94,7 @@ let DocumentService = class DocumentService {
             throw new common_2.NotFoundException('파일 Key를 찾을 수 없습니다.');
         }
         const command = new client_s3_1.GetObjectCommand({
-            Bucket: process.env.R2_BUCKET_NAME,
+            Bucket: this.configService.get('R2_BUCKET_NAME'),
             Key: fileKey,
         });
         return await this.s3Client.send(command);
@@ -101,7 +105,7 @@ let DocumentService = class DocumentService {
             const utf8Name = Buffer.from(file.originalname, 'latin1').toString('utf8');
             const fileKey = `${Date.now()}_${utf8Name}`;
             await this.s3Client.send(new client_s3_2.PutObjectCommand({
-                Bucket: process.env.R2_BUCKET_NAME,
+                Bucket: this.configService.get('R2_BUCKET_NAME'),
                 Key: fileKey,
                 Body: file.buffer,
                 ContentType: file.mimetype,
@@ -110,7 +114,7 @@ let DocumentService = class DocumentService {
                 fileKey,
                 originalName: utf8Name,
                 size: file.size,
-                fileUrl: `${process.env.R2_PUBLIC_URL}/${fileKey}`,
+                fileUrl: `${this.configService.get('R2_PUBLIC_URL')}/${fileKey}`,
             });
         }
         const document = await this.uploadModel.create({
@@ -120,7 +124,7 @@ let DocumentService = class DocumentService {
             userId: user.id,
             files: uploadedFiles,
         });
-        await axios_1.default.post(`${process.env.ES_URL}/documents/_doc/${document._id}`, {
+        await axios_1.default.post(`${this.esUrl}/documents/_doc/${document._id}`, {
             title: document.title,
             content: document.content,
             files: document.files.map((file) => ({
@@ -130,7 +134,7 @@ let DocumentService = class DocumentService {
         }, {
             auth: {
                 username: 'elastic',
-                password: process.env.ES_PASSWORD || '123!@#qwe',
+                password: this.esPassword,
             },
         });
         return {
@@ -153,7 +157,7 @@ let DocumentService = class DocumentService {
             document.tags = typeof tags === 'string' ? JSON.parse(tags) : tags;
         }
         await document.save();
-        await axios_1.default.post(`${process.env.ES_URL}/documents/_update/${id}`, {
+        await axios_1.default.post(`${this.esUrl}/documents/_update/${id}`, {
             doc: {
                 title: document.title,
                 content: document.content,
@@ -161,7 +165,7 @@ let DocumentService = class DocumentService {
         }, {
             auth: {
                 username: 'elastic',
-                password: process.env.ES_PASSWORD || '123!@#qwe',
+                password: this.esPassword,
             },
         });
         return {
@@ -179,15 +183,15 @@ let DocumentService = class DocumentService {
         }
         for (const file of document.files) {
             await this.s3Client.send(new client_s3_2.DeleteObjectCommand({
-                Bucket: process.env.R2_BUCKET_NAME,
+                Bucket: this.configService.get('R2_BUCKET_NAME'),
                 Key: file.fileKey,
             }));
         }
         await document.deleteOne();
-        await axios_1.default.delete(`${process.env.ES_URL}/documents/_doc/${id}`, {
+        await axios_1.default.delete(`${this.esUrl}/documents/_doc/${id}`, {
             auth: {
                 username: 'elastic',
-                password: process.env.ES_PASSWORD || '123!@#qwe',
+                password: this.esPassword,
             },
         });
         return {
@@ -206,14 +210,14 @@ let DocumentService = class DocumentService {
         }
         document.isFavorite = isFavorite;
         await document.save();
-        await axios_1.default.post(`${process.env.ES_URL}/documents/_update/${id}`, {
+        await axios_1.default.post(`${this.esUrl}/documents/_update/${id}`, {
             doc: {
                 isFavorite: document.isFavorite,
             },
         }, {
             auth: {
                 username: 'elastic',
-                password: process.env.ES_PASSWORD || '123!@#qwe',
+                password: this.esPassword,
             },
         });
         return {

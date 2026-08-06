@@ -20,6 +20,8 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class DocumentService {
   private readonly s3Client: S3Client;
+  private readonly esUrl: string;
+  private readonly esPassword: string;
   // constructor 안에는 DI(의존성 주입)만
   constructor(
     @InjectModel(Upload.name)
@@ -36,6 +38,9 @@ export class DocumentService {
         )!,
       },
     });
+
+    this.esUrl = this.configService.get<string>('ES_URL')!;
+    this.esPassword = this.configService.get<string>('ES_PASSWORD')!;
   }
 
   // constructor 밖에는 직접 생성하거나 클래스가 소유하는 멤버
@@ -85,7 +90,7 @@ export class DocumentService {
     }
 
     const response = await axios.post(
-      `${process.env.ES_URL}/documents/_search`,
+      `${this.esUrl}/documents/_search`,
       {
         query: {
           match: {
@@ -96,7 +101,7 @@ export class DocumentService {
       {
         auth: {
           username: 'elastic',
-          password: process.env.ES_PASSWORD || '123!@#qwe',
+          password: this.esPassword,
         },
       },
     );
@@ -118,7 +123,7 @@ export class DocumentService {
     }
 
     const command = new GetObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME,
+      Bucket: this.configService.get<string>('R2_BUCKET_NAME')!,
       Key: fileKey,
     });
 
@@ -145,7 +150,7 @@ export class DocumentService {
 
       await this.s3Client.send(
         new PutObjectCommand({
-          Bucket: process.env.R2_BUCKET_NAME,
+          Bucket: this.configService.get<string>('R2_BUCKET_NAME')!,
           Key: fileKey,
           Body: file.buffer,
           ContentType: file.mimetype,
@@ -156,7 +161,7 @@ export class DocumentService {
         fileKey,
         originalName: utf8Name,
         size: file.size,
-        fileUrl: `${process.env.R2_PUBLIC_URL}/${fileKey}`,
+        fileUrl: `${this.configService.get<string>('R2_PUBLIC_URL')}/${fileKey}`,
       });
     }
 
@@ -169,7 +174,7 @@ export class DocumentService {
     });
 
     await axios.post(
-      `${process.env.ES_URL}/documents/_doc/${document._id}`,
+      `${this.esUrl}/documents/_doc/${document._id}`,
       {
         title: document.title,
         content: document.content,
@@ -181,7 +186,7 @@ export class DocumentService {
       {
         auth: {
           username: 'elastic',
-          password: process.env.ES_PASSWORD || '123!@#qwe',
+          password: this.esPassword,
         },
       },
     );
@@ -216,7 +221,7 @@ export class DocumentService {
 
     // Elasticsearch 업데이트
     await axios.post(
-      `${process.env.ES_URL}/documents/_update/${id}`,
+      `${this.esUrl}/documents/_update/${id}`,
       {
         doc: {
           title: document.title,
@@ -226,7 +231,7 @@ export class DocumentService {
       {
         auth: {
           username: 'elastic',
-          password: process.env.ES_PASSWORD || '123!@#qwe',
+          password: this.esPassword,
         },
       },
     );
@@ -252,7 +257,7 @@ export class DocumentService {
     for (const file of document.files) {
       await this.s3Client.send(
         new DeleteObjectCommand({
-          Bucket: process.env.R2_BUCKET_NAME,
+          Bucket: this.configService.get<string>('R2_BUCKET_NAME')!,
           Key: file.fileKey,
         }),
       );
@@ -262,10 +267,10 @@ export class DocumentService {
     await document.deleteOne();
 
     // Elasticsearch 삭제
-    await axios.delete(`${process.env.ES_URL}/documents/_doc/${id}`, {
+    await axios.delete(`${this.esUrl}/documents/_doc/${id}`, {
       auth: {
         username: 'elastic',
-        password: process.env.ES_PASSWORD || '123!@#qwe',
+        password: this.esPassword,
       },
     });
 
@@ -292,7 +297,7 @@ export class DocumentService {
     await document.save();
 
     await axios.post(
-      `${process.env.ES_URL}/documents/_update/${id}`,
+      `${this.esUrl}/documents/_update/${id}`,
       {
         doc: {
           isFavorite: document.isFavorite,
@@ -301,7 +306,7 @@ export class DocumentService {
       {
         auth: {
           username: 'elastic',
-          password: process.env.ES_PASSWORD || '123!@#qwe',
+          password: this.esPassword,
         },
       },
     );

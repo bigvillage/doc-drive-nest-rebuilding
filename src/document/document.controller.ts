@@ -7,7 +7,6 @@ import {
   Delete,
   Patch,
   Res,
-  Request,
   Query,
   UseGuards,
   UploadedFiles,
@@ -25,10 +24,11 @@ import {
 } from '@nestjs/swagger';
 import { DocumentService } from './document.service';
 import type { Response } from 'express';
-import type { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
 import { Readable } from 'node:stream';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import type { JwtUser } from '../auth/interfaces/jwt-user.interface';
 // dto
 import { UploadDocumentDto } from './dto/upload-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
@@ -44,11 +44,8 @@ export class DocumentController {
   @ApiOperation({ summary: '문서 목록 조회' })
   @ApiCookieAuth('token')
   @Get('list')
-  findAll(
-    @Query() query: ListDocumentDto,
-    @Request() req: AuthenticatedRequest,
-  ) {
-    return this.documentService.findAll(query, req.user);
+  findAll(@Query() query: ListDocumentDto, @CurrentUser() user: JwtUser) {
+    return this.documentService.findAll(query, user);
   }
 
   @Get('search')
@@ -111,41 +108,35 @@ export class DocumentController {
   async upload(
     @Body() body: UploadDocumentDto,
     @UploadedFiles() files: any[],
-    @Request() req: AuthenticatedRequest,
+    @CurrentUser() user: JwtUser,
   ) {
     // console.log('controller executed');
     // console.log(req.user);
 
-    return this.documentService.upload(body, files, req.user);
+    return this.documentService.upload(body, files, user);
   }
 
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: '문서 수정' })
   @ApiCookieAuth('token')
   @Put('upload')
-  update(
-    @Body() body: UpdateDocumentDto,
-    @Request() req: AuthenticatedRequest,
-  ) {
-    return this.documentService.update(body, req.user);
+  update(@Body() body: UpdateDocumentDto, @CurrentUser() user: JwtUser) {
+    return this.documentService.update(body, user);
   }
 
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: '문서 삭제' })
   @ApiCookieAuth('token')
   @Delete('upload')
-  remove(@Body('id') id: string, @Request() req: AuthenticatedRequest) {
-    return this.documentService.delete(id, req.user);
+  remove(@Body('id') id: string, @CurrentUser() user: JwtUser) {
+    return this.documentService.delete(id, user);
   }
 
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: '즐겨찾기 변경' })
   @ApiCookieAuth('token')
   @Patch('upload')
-  favorite(
-    @Body() body: FavoriteDocumentDto,
-    @Request() req: AuthenticatedRequest,
-  ) {
-    return this.documentService.favorite(body, req.user);
+  favorite(@Body() body: FavoriteDocumentDto, @CurrentUser() user: JwtUser) {
+    return this.documentService.favorite(body, user);
   }
 }

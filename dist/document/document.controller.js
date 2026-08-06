@@ -19,6 +19,7 @@ const document_service_1 = require("./document.service");
 const node_stream_1 = require("node:stream");
 const platform_express_1 = require("@nestjs/platform-express");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
 const upload_document_dto_1 = require("./dto/upload-document.dto");
 const update_document_dto_1 = require("./dto/update-document.dto");
 const favorite_document_dto_1 = require("./dto/favorite-document.dto");
@@ -28,8 +29,8 @@ let DocumentController = class DocumentController {
     constructor(documentService) {
         this.documentService = documentService;
     }
-    findAll(query, req) {
-        return this.documentService.findAll(query, req.user);
+    findAll(query, user) {
+        return this.documentService.findAll(query, user);
     }
     search(q) {
         return this.documentService.search(q);
@@ -44,17 +45,17 @@ let DocumentController = class DocumentController {
         res.setHeader('Content-Type', response.ContentType || 'application/octet-stream');
         body.pipe(res);
     }
-    async upload(body, files, req) {
-        return this.documentService.upload(body, files, req.user);
+    async upload(body, files, user) {
+        return this.documentService.upload(body, files, user);
     }
-    update(body, req) {
-        return this.documentService.update(body, req.user);
+    update(body, user) {
+        return this.documentService.update(body, user);
     }
-    remove(id, req) {
-        return this.documentService.delete(id, req.user);
+    remove(id, user) {
+        return this.documentService.delete(id, user);
     }
-    favorite(body, req) {
-        return this.documentService.favorite(body, req.user);
+    favorite(body, user) {
+        return this.documentService.favorite(body, user);
     }
 };
 exports.DocumentController = DocumentController;
@@ -64,7 +65,7 @@ __decorate([
     (0, swagger_1.ApiCookieAuth)('token'),
     (0, common_1.Get)('list'),
     __param(0, (0, common_1.Query)()),
-    __param(1, (0, common_1.Request)()),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [list_document_dto_1.ListDocumentDto, Object]),
     __metadata("design:returntype", void 0)
@@ -105,7 +106,7 @@ __decorate([
     })),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.UploadedFiles)()),
-    __param(2, (0, common_1.Request)()),
+    __param(2, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [upload_document_dto_1.UploadDocumentDto, Array, Object]),
     __metadata("design:returntype", Promise)
@@ -116,7 +117,7 @@ __decorate([
     (0, swagger_1.ApiCookieAuth)('token'),
     (0, common_1.Put)('upload'),
     __param(0, (0, common_1.Body)()),
-    __param(1, (0, common_1.Request)()),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [update_document_dto_1.UpdateDocumentDto, Object]),
     __metadata("design:returntype", void 0)
@@ -127,7 +128,7 @@ __decorate([
     (0, swagger_1.ApiCookieAuth)('token'),
     (0, common_1.Delete)('upload'),
     __param(0, (0, common_1.Body)('id')),
-    __param(1, (0, common_1.Request)()),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
@@ -138,7 +139,7 @@ __decorate([
     (0, swagger_1.ApiCookieAuth)('token'),
     (0, common_1.Patch)('upload'),
     __param(0, (0, common_1.Body)()),
-    __param(1, (0, common_1.Request)()),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [favorite_document_dto_1.FavoriteDocumentDto, Object]),
     __metadata("design:returntype", void 0)
