@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DocumentController = void 0;
 const common_1 = require("@nestjs/common");
+const swagger_1 = require("@nestjs/swagger");
 const document_service_1 = require("./document.service");
 const node_stream_1 = require("node:stream");
 const platform_express_1 = require("@nestjs/platform-express");
@@ -59,6 +60,8 @@ let DocumentController = class DocumentController {
 exports.DocumentController = DocumentController;
 __decorate([
     (0, common_2.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: '문서 목록 조회' }),
+    (0, swagger_1.ApiCookieAuth)('token'),
     (0, common_1.Get)('list'),
     __param(0, (0, common_1.Query)()),
     __param(1, (0, common_1.Request)()),
@@ -84,6 +87,9 @@ __decorate([
 ], DocumentController.prototype, "download", null);
 __decorate([
     (0, common_2.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: '문서 업로드' }),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
+    (0, swagger_1.ApiCookieAuth)('token'),
     (0, common_1.Post)('upload'),
     (0, common_1.UseInterceptors)((0, platform_express_1.FilesInterceptor)('files')),
     __param(0, (0, common_1.Body)()),
@@ -95,6 +101,8 @@ __decorate([
 ], DocumentController.prototype, "upload", null);
 __decorate([
     (0, common_2.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: '문서 수정' }),
+    (0, swagger_1.ApiCookieAuth)('token'),
     (0, common_1.Put)('upload'),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Request)()),
@@ -104,6 +112,8 @@ __decorate([
 ], DocumentController.prototype, "update", null);
 __decorate([
     (0, common_2.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: '문서 삭제' }),
+    (0, swagger_1.ApiCookieAuth)('token'),
     (0, common_1.Delete)('upload'),
     __param(0, (0, common_1.Body)('id')),
     __param(1, (0, common_1.Request)()),
@@ -113,6 +123,8 @@ __decorate([
 ], DocumentController.prototype, "remove", null);
 __decorate([
     (0, common_2.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: '즐겨찾기 변경' }),
+    (0, swagger_1.ApiCookieAuth)('token'),
     (0, common_1.Patch)('upload'),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Request)()),
@@ -121,6 +133,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DocumentController.prototype, "favorite", null);
 exports.DocumentController = DocumentController = __decorate([
+    (0, swagger_1.ApiTags)('Document'),
     (0, common_1.Controller)('document'),
     __metadata("design:paramtypes", [document_service_1.DocumentService])
 ], DocumentController);

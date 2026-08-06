@@ -7,6 +7,8 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
+// swagger
+import { ApiTags, ApiOperation, ApiBody, ApiCookieAuth } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
@@ -14,15 +16,20 @@ import { LoginDto } from './dto/login.dto';
 import type { Response } from 'express';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @ApiOperation({ summary: '회원가입' })
+  @ApiBody({ type: SignupDto })
   @Post('signup')
   signup(@Body() signupDto: SignupDto) {
     return this.authService.signup(signupDto);
   }
 
+  @ApiOperation({ summary: '로그인' })
+  @ApiBody({ type: LoginDto })
   @Post('login')
   async login(
     @Body() loginDto: LoginDto,
@@ -45,6 +52,8 @@ export class AuthController {
     };
   }
 
+  @ApiOperation({ summary: '로그아웃' })
+  @ApiCookieAuth('token')
   @Post('logout')
   logout(@Res({ passthrough: true }) response: Response) {
     response.clearCookie('token', {

@@ -10,6 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FavoriteDocumentDto = void 0;
+const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 class FavoriteDocumentDto {
     id;
@@ -17,10 +18,18 @@ class FavoriteDocumentDto {
 }
 exports.FavoriteDocumentDto = FavoriteDocumentDto;
 __decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '문서 ID',
+        example: '6892d0d3f0f6a1b0d9d7d123',
+    }),
     (0, class_validator_1.IsMongoId)(),
     __metadata("design:type", String)
 ], FavoriteDocumentDto.prototype, "id", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '즐겨찾기 여부',
+        example: true,
+    }),
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], FavoriteDocumentDto.prototype, "isFavorite", void 0);
