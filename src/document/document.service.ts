@@ -1,13 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import axios from 'axios';
-import { BadRequestException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { Upload, UploadDocument } from './schemas/upload.schema';
+import { JwtUser } from '../auth/interfaces/jwt-user.interface';
 // dto
 import { UploadDocumentDto } from './dto/upload-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 import { FavoriteDocumentDto } from './dto/favorite-document.dto';
+import { ListDocumentDto } from './dto/list-document.dto';
 
 // cloudflare
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
@@ -35,9 +36,9 @@ export class DocumentService {
   });
 
   // 문서리스트
-  async findAll(query: any, user: any) {
-    const page = Number(query.page) || 1;
-    const limit = Number(query.limit) || 10;
+  async findAll(query: ListDocumentDto, user: JwtUser) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
 
     const skip = (page - 1) * limit;
 
@@ -111,7 +112,7 @@ export class DocumentService {
   }
 
   // 파일등록
-  async upload(body: UploadDocumentDto, files: any[], user: any) {
+  async upload(body: UploadDocumentDto, files: any[], user: JwtUser) {
     const uploadedFiles: {
       fileKey: string;
       originalName: string;
@@ -178,7 +179,7 @@ export class DocumentService {
   }
 
   // 파일 수정
-  async update(body: UpdateDocumentDto, user: any) {
+  async update(body: UpdateDocumentDto, user: JwtUser) {
     const { id, title, content, tags } = body;
 
     const document = await this.uploadModel.findOne({
@@ -223,7 +224,7 @@ export class DocumentService {
   }
 
   // 파일 삭제
-  async delete(id: string, user: any) {
+  async delete(id: string, user: JwtUser) {
     const document = await this.uploadModel.findOne({
       _id: id,
       userId: user.id,
@@ -261,7 +262,7 @@ export class DocumentService {
   }
 
   // 즐겨찾기
-  async favorite(body: FavoriteDocumentDto, user: any) {
+  async favorite(body: FavoriteDocumentDto, user: JwtUser) {
     const { id, isFavorite } = body;
 
     const document = await this.uploadModel.findOne({

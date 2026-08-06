@@ -18,11 +18,11 @@ const swagger_1 = require("@nestjs/swagger");
 const document_service_1 = require("./document.service");
 const node_stream_1 = require("node:stream");
 const platform_express_1 = require("@nestjs/platform-express");
-const common_2 = require("@nestjs/common");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const upload_document_dto_1 = require("./dto/upload-document.dto");
 const update_document_dto_1 = require("./dto/update-document.dto");
 const favorite_document_dto_1 = require("./dto/favorite-document.dto");
+const list_document_dto_1 = require("./dto/list-document.dto");
 let DocumentController = class DocumentController {
     documentService;
     constructor(documentService) {
@@ -59,14 +59,14 @@ let DocumentController = class DocumentController {
 };
 exports.DocumentController = DocumentController;
 __decorate([
-    (0, common_2.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiOperation)({ summary: '문서 목록 조회' }),
     (0, swagger_1.ApiCookieAuth)('token'),
     (0, common_1.Get)('list'),
     __param(0, (0, common_1.Query)()),
     __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [list_document_dto_1.ListDocumentDto, Object]),
     __metadata("design:returntype", void 0)
 ], DocumentController.prototype, "findAll", null);
 __decorate([
@@ -86,12 +86,23 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], DocumentController.prototype, "download", null);
 __decorate([
-    (0, common_2.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiOperation)({ summary: '문서 업로드' }),
     (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiCookieAuth)('token'),
     (0, common_1.Post)('upload'),
-    (0, common_1.UseInterceptors)((0, platform_express_1.FilesInterceptor)('files')),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FilesInterceptor)('files', 10, {
+        limits: {
+            fileSize: 20 * 1024 * 1024,
+        },
+        fileFilter(req, file, callback) {
+            const allowExt = /\.(pdf|doc|docx|xls|xlsx|ppt|pptx|hwp|hwpx|txt|png|jpg|jpeg|gif)$/i;
+            if (!allowExt.test(file.originalname)) {
+                return callback(new common_1.BadRequestException('허용되지 않는 파일 형식입니다.'), false);
+            }
+            callback(null, true);
+        },
+    })),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.UploadedFiles)()),
     __param(2, (0, common_1.Request)()),
@@ -100,7 +111,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], DocumentController.prototype, "upload", null);
 __decorate([
-    (0, common_2.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiOperation)({ summary: '문서 수정' }),
     (0, swagger_1.ApiCookieAuth)('token'),
     (0, common_1.Put)('upload'),
@@ -111,7 +122,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DocumentController.prototype, "update", null);
 __decorate([
-    (0, common_2.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiOperation)({ summary: '문서 삭제' }),
     (0, swagger_1.ApiCookieAuth)('token'),
     (0, common_1.Delete)('upload'),
@@ -122,7 +133,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DocumentController.prototype, "remove", null);
 __decorate([
-    (0, common_2.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiOperation)({ summary: '즐겨찾기 변경' }),
     (0, swagger_1.ApiCookieAuth)('token'),
     (0, common_1.Patch)('upload'),

@@ -19,11 +19,10 @@ exports.DocumentService = void 0;
 const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const axios_1 = __importDefault(require("axios"));
-const common_2 = require("@nestjs/common");
 const mongoose_2 = require("mongoose");
 const upload_schema_1 = require("./schemas/upload.schema");
 const client_s3_1 = require("@aws-sdk/client-s3");
-const common_3 = require("@nestjs/common");
+const common_2 = require("@nestjs/common");
 const client_s3_2 = require("@aws-sdk/client-s3");
 let DocumentService = class DocumentService {
     uploadModel;
@@ -39,8 +38,8 @@ let DocumentService = class DocumentService {
         },
     });
     async findAll(query, user) {
-        const page = Number(query.page) || 1;
-        const limit = Number(query.limit) || 10;
+        const page = query.page ?? 1;
+        const limit = query.limit ?? 10;
         const skip = (page - 1) * limit;
         const filter = {
             userId: user.id,
@@ -61,7 +60,7 @@ let DocumentService = class DocumentService {
     }
     async search(keyword) {
         if (!keyword) {
-            throw new common_2.BadRequestException('검색어를 입력해주세요.');
+            throw new common_1.BadRequestException('검색어를 입력해주세요.');
         }
         const response = await axios_1.default.post(`${process.env.ES_URL}/documents/_search`, {
             query: {
@@ -84,7 +83,7 @@ let DocumentService = class DocumentService {
     async download(fileUrl) {
         const fileKey = fileUrl.split('/').pop()?.split('?')[0];
         if (!fileKey) {
-            throw new common_3.NotFoundException('파일 Key를 찾을 수 없습니다.');
+            throw new common_2.NotFoundException('파일 Key를 찾을 수 없습니다.');
         }
         const command = new client_s3_1.GetObjectCommand({
             Bucket: process.env.R2_BUCKET_NAME,
@@ -142,7 +141,7 @@ let DocumentService = class DocumentService {
             userId: user.id,
         });
         if (!document) {
-            throw new common_3.NotFoundException('문서를 찾을 수 없습니다.');
+            throw new common_2.NotFoundException('문서를 찾을 수 없습니다.');
         }
         document.title = title || document.title;
         document.content = content || document.content;
@@ -172,7 +171,7 @@ let DocumentService = class DocumentService {
             userId: user.id,
         });
         if (!document) {
-            throw new common_3.NotFoundException('문서를 찾을 수 없습니다.');
+            throw new common_2.NotFoundException('문서를 찾을 수 없습니다.');
         }
         for (const file of document.files) {
             await this.s3Client.send(new client_s3_2.DeleteObjectCommand({
@@ -199,7 +198,7 @@ let DocumentService = class DocumentService {
             userId: user.id,
         });
         if (!document) {
-            throw new common_3.NotFoundException('문서를 찾을 수 없습니다.');
+            throw new common_2.NotFoundException('문서를 찾을 수 없습니다.');
         }
         document.isFavorite = isFavorite;
         await document.save();
